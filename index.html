@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>跑步训练计划</title>
+    <style>
+        :root {
+            --primary-color: #3498db;
+            --secondary-color: #2ecc71;
+            --accent-color: #e74c3c;
+            --light-bg: #f8f9fa;
+            --dark-bg: #2c3e50;
+            --text-color: #333;
+            --light-text: #fff;
+            --border-color: #ddd;
+            --today-bg: #fff3cd;
+            --today-border: #ffeaa7;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: var(--text-color);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            color: var(--light-text);
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .week-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .week-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .week-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.15);
+        }
+
+        .week-header {
+            background: var(--primary-color);
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin: -25px -25px 20px -25px;
+            text-align: center;
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+
+        .training-day {
+            padding: 15px;
+            margin-bottom: 12px;
+            border-radius: 8px;
+            border-left: 4px solid var(--secondary-color);
+            background: var(--light-bg);
+            transition: all 0.3s ease;
+        }
+
+        .training-day:hover {
+            background: #e8f4fc;
+            transform: translateX(5px);
+        }
+
+        .training-day.today {
+            background: var(--today-bg);
+            border-left-color: var(--accent-color);
+            box-shadow: 0 2px 10px rgba(231, 76, 60, 0.2);
+        }
+
+        .day-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+
+        .date {
+            color: var(--primary-color);
+            font-size: 0.9rem;
+        }
+
+        .day-of-week {
+            color: white;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        /* 周一颜色 */
+        .day-of-week.周一 {
+            background: #3498db; /* 蓝色 */
+        }
+
+        /* 周二颜色 */
+        .day-of-week.周二 {
+            background: #2ecc71; /* 绿色 */
+        }
+
+        /* 周三颜色 */
+        .day-of-week.周三 {
+            background: #f39c12; /* 橙色 */
+        }
+
+        /* 周四颜色 */
+        .day-of-week.周四 {
+            background: #9b59b6; /* 紫色 */
+        }
+
+        /* 周五颜色 */
+        .day-of-week.周五 {
+            background: #e74c3c; /* 红色 */
+        }
+
+        /* 周六颜色 */
+        .day-of-week.周六 {
+            background: #1abc9c; /* 青绿色 */
+        }
+
+        /* 周日颜色 */
+        .day-of-week.周日 {
+            background: #e67e22; /* 橙红色 */
+        }
+
+        .training-content {
+            color: #666;
+            line-height: 1.5;
+        }
+
+        .today-badge {
+            background: var(--accent-color);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 0.7rem;
+            margin-left: 8px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .week-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .week-card {
+                padding: 20px;
+            }
+            
+            .training-day {
+                padding: 12px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .header h1 {
+                font-size: 1.8rem;
+            }
+            
+            .day-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 5px;
+            }
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: var(--light-text);
+            font-size: 1.2rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏃‍♂️ 跑步训练计划</h1>
+            <p>科学训练，循序渐进，达成目标</p>
+        </div>
+        
+        <div id="training-plan" class="loading">
+            正在加载训练计划...
+        </div>
+    </div>
+
+    <script>
+        // CSV 数据
+        const csvData = `周次,星期,日期,训练内容
+第1周,周四,2025-08-28,节奏 6-8km @4:30-4:40
+第1周,周五,2025-08-29,5km 恢复 或休息
+第1周,周六,2025-08-30,12-14km 慢跑 (5:00-5:20)
+第1周,周日,2025-08-31,16-18km 长跑 (5:10-5:30)
+第2周,周一,2025-09-01,6-8km 轻松跑 (5:10-5:30)
+第2周,周二,2025-09-02,间歇 8×400m @4:00/km
+第2周,周三,2025-09-03,8-10km 轻松 + 核心
+第2周,周四,2025-09-04,节奏 6-8km @4:30-4:40
+第2周,周五,2025-09-05,5km 恢复 或休息
+第2周,周六,2025-09-06,12-14km 慢跑 (5:00-5:20)
+第2周,周日,2025-09-07,16-18km 长跑 (5:10-5:30)
+第3周,周一,2025-09-08,6-8km 轻松跑 (5:10-5:30)
+第3周,周二,2025-09-09,间歇 8×400m @4:00/km
+第3周,周三,2025-09-10,8-10km 轻松 + 核心
+第3周,周四,2025-09-11,节奏 6-8km @4:30-4:40
+第3周,周五,2025-09-12,5km 恢复 或休息
+第3周,周六,2025-09-13,12-14km 慢跑 (5:00-5:20)
+第3周,周日,2025-09-14,16-18km 长跑 (5:10-5:30)
+第4周,周一,2025-09-15,6-8km 轻松跑 (5:10-5:30)
+第4周,周二,2025-09-16,间歇 8×400m @4:00/km
+第4周,周三,2025-09-17,8-10km 轻松 + 核心
+第4周,周四,2025-09-18,节奏 6-8km @4:30-4:40
+第4周,周五,2025-09-19,5km 恢复 或休息
+第4周,周六,2025-09-20,12-14km 慢跑 (5:00-5:20)
+第4周,周日,2025-09-21,16-18km 长跑 (5:10-5:30)
+第5周,周一,2025-09-22,6-8km 恢复跑
+第5周,周二,2025-09-23,间歇 5×1000m @4:00/km
+第5周,周三,2025-09-24,12km 基础跑 (4:50-5:00)
+第5周,周四,2025-09-25,节奏 8-12km @4:15-4:20
+第5周,周五,2025-09-26,休息 或 6km 恢复
+第5周,周六,2025-09-27,混合跑 3×5km @4:20/km
+第5周,周日,2025-09-28,18-22km 长跑 (后半加速到4:30-4:40)
+第6周,周一,2025-09-29,6-8km 恢复跑
+第6周,周二,2025-09-30,间歇 5×1000m @4:00/km
+第6周,周三,2025-10-01,12km 基础跑 (4:50-5:00)
+第6周,周四,2025-10-02,节奏 8-12km @4:15-4:20
+第6周,周五,2025-10-03,休息 或 6km 恢复
+第6周,周六,2025-10-04,混合跑 3×5km @4:20/km
+第6周,周日,2025-10-05,18-22km 长跑 (后半加速到4:30-4:40)
+第7周,周一,2025-10-06,6-8km 恢复跑
+第7周,周二,2025-10-07,间歇 5×1000m @4:00/km
+第7周,周三,2025-10-08,12km 基础跑 (4:50-5:00)
+第7周,周四,2025-10-09,节奏 8-12km @4:15-4:20
+第7周,周五,2025-10-10,休息 或 6km 恢复
+第7周,周六,2025-10-11,混合跑 3×5km @4:20/km
+第7周,周日,2025-10-12,18-22km 长跑 (后半加速到4:30-4:40)
+第8周,周一,2025-10-13,6-8km 恢复跑
+第8周,周二,2025-10-14,间歇 5×1000m @4:00/km
+第8周,周三,2025-10-15,12km 基础跑 (4:50-5:00)
+第8周,周四,2025-10-16,节奏 8-12km @4:15-4:20
+第8周,周五,2025-10-17,休息 或 6km 恢复
+第8周,周六,2025-10-18,混合跑 3×5km @4:20/km
+第8周,周日,2025-10-19,18-22km 长跑 (后半加速到4:30-4:40)
+第9周,周一,2025-10-20,6-8km 恢复跑
+第9周,周二,2025-10-21,间歇 5×1000m @4:00/km
+第9周,周三,2025-10-22,12km 基础跑 (4:50-5:00)
+第9周,周四,2025-10-23,节奏 8-12km @4:15-4:20
+第9周,周五,2025-10-24,休息 或 6km 恢复
+第9周,周六,2025-10-25,混合跑 3×5km @4:20/km
+第9周,周日,2025-10-26,18-22km 长跑 (后半加速到4:30-4:40)
+第10周,周一,2025-10-27,6-8km 恢复跑
+第10周,周二,2025-10-28,间歇 5×1000m @4:00/km
+第10周,周三,2025-10-29,12km 基础跑 (4:50-5:00)
+第10周,周四,2025-10-30,节奏 8-12km @4:15-4:20
+第10周,周五,2025-10-31,休息 或 6km 恢复
+第10周,周六,2025-11-01,混合跑 3×5km @4:20/km
+第10周,周日,2025-11-02,18-22km 长跑 (后半加速到4:30-4:40)
+第11周,周一,2025-11-03,6km 恢复跑
+第11周,周二,2025-11-04,间歇 8×1000m @3:55-4:00/km
+第11周,周三,2025-11-05,10km 轻松跑
+第11周,周四,2025-11-06,节奏 6-8km @4:15/km
+第11周,周五,2025-11-07,休息
+第11周,周六,2025-11-08,14-16km 配速跑 (4:16-4:20)
+第11周,周日,2025-11-09,18-20km 长跑 (最后5km @4:20-4:25)
+第12周,周一,2025-11-10,6km 恢复跑
+第12周,周二,2025-11-11,间歇 8×1000m @3:55-4:00/km
+第12周,周三,2025-11-12,10km 轻松跑
+第12周,周四,2025-11-13,节奏 6-8km @4:15/km
+第12周,周五,2025-11-14,休息
+第12周,周六,2025-11-15,14-16km 配速跑 (4:16-4:20)
+第12周,周日,2025-11-16,18-20km 长跑 (最后5km @4:20-4:25)
+第13周,周一,2025-11-17,6km 恢复跑
+第13周,周二,2025-11-18,间歇 8×1000m @3:55-4:00/km
+第13周,周三,2025-11-19,10km 轻松跑
+第13周,周四,2025-11-20,节奏 6-8km @4:15/km
+第13周,周五,2025-11-21,休息
+第13周,周六,2025-11-22,14-16km 配速跑 (4:16-4:20)
+第13周,周日,2025-11-23,18-20km 长跑 (最后5km @4:20-4:25)`;
+
+        function parseCSV(csv) {
+            const lines = csv.split('\n');
+            const result = [];
+            const headers = lines[0].split(',');
+            
+            for (let i = 1; i < lines.length; i++) {
+                const line = lines[i].trim();
+                if (!line) continue;
+                
+                const values = line.split(',');
+                const obj = {};
+                
+                for (let j = 0; j < headers.length; j++) {
+                    obj[headers[j]] = values[j] || '';
+                }
+                
+                result.push(obj);
+            }
+            
+            return result;
+        }
+
+        function groupByWeek(data) {
+            const grouped = {};
+            
+            data.forEach(item => {
+                const week = item['周次'];
+                if (!grouped[week]) {
+                    grouped[week] = [];
+                }
+                grouped[week].push(item);
+            });
+            
+            return grouped;
+        }
+
+        function getWeekNumber(weekStr) {
+            // 从"第1周"中提取数字
+            const match = weekStr.match(/第(\d+)周/);
+            return match ? parseInt(match[1]) : 0;
+        }
+
+        function formatDate(dateStr) {
+            const date = new Date(dateStr);
+            return date.toLocaleDateString('zh-CN', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit'
+            });
+        }
+
+        function isToday(dateStr) {
+            const today = new Date();
+            const targetDate = new Date(dateStr);
+            
+            return today.toDateString() === targetDate.toDateString();
+        }
+
+        function renderTrainingPlan() {
+            const data = parseCSV(csvData);
+            const groupedData = groupByWeek(data);
+            const container = document.getElementById('training-plan');
+            
+            let html = '<div class="week-container">';
+            
+            // 按周次数字排序
+            const sortedWeeks = Object.keys(groupedData).sort((a, b) => {
+                return getWeekNumber(a) - getWeekNumber(b);
+            });
+            
+            let todayElementId = null;
+            
+            sortedWeeks.forEach(week => {
+                const weekData = groupedData[week];
+                const weekNumber = getWeekNumber(week);
+                
+                html += `
+                    <div class="week-card" id="week-${weekNumber}">
+                        <div class="week-header">${week}</div>
+                `;
+                
+                weekData.forEach(day => {
+                    const isTodayDate = isToday(day['日期']);
+                    const todayClass = isTodayDate ? 'today' : '';
+                    const todayBadge = isTodayDate ? '<span class="today-badge">今天</span>' : '';
+                    const dayId = `day-${day['日期'].replace(/-/g, '')}`;
+                    
+                    if (isTodayDate) {
+                        todayElementId = dayId;
+                    }
+                    
+                    html += `
+                        <div class="training-day ${todayClass}" id="${dayId}">
+                            <div class="day-header">
+                                <span class="date">${formatDate(day['日期'])}${todayBadge}</span>
+                                <span class="day-of-week ${day['星期']}">${day['星期']}</span>
+                            </div>
+                            <div class="training-content">${day['训练内容']}</div>
+                        </div>
+                    `;
+                });
+                
+                html += '</div>';
+            });
+            
+            html += '</div>';
+            container.innerHTML = html;
+            container.classList.remove('loading');
+            
+            // 如果有今天的项目，自动滚动到该位置
+            if (todayElementId) {
+                setTimeout(() => {
+                    const todayElement = document.getElementById(todayElementId);
+                    if (todayElement) {
+                        todayElement.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'center'
+                        });
+                        
+                        // 添加额外的视觉强调
+                        todayElement.style.animation = 'pulse 2s ease-in-out';
+                    }
+                }, 100);
+            }
+        }
+
+        // 添加脉冲动画
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes pulse {
+                0% { transform: scale(1); }
+                50% { transform: scale(1.02); box-shadow: 0 0 20px rgba(231, 76, 60, 0.4); }
+                100% { transform: scale(1); }
+            }
+        `;
+        document.head.appendChild(style);
+
+        // 页面加载完成后渲染
+        document.addEventListener('DOMContentLoaded', renderTrainingPlan);
+    </script>
+</body>
+</html>
